@@ -1,0 +1,371 @@
+HMX            !mnemonic for mixture model, must match hfmix on call to SETUP
+3                 !version number
+
+#BNC              !binary mixing coefficients
+BNC
+?binary mixing coefficients for the various mixing rules used with the HMX model
+!
+?Rxxx     /Rxxx
+?Example setup for a new mixture
+CAS#        /CAS#         KW0    1.          1.          1.          1.          0.          0.
+                          TC1    0.          0.          0.          0.          0.          0.
+                          VC1    0.          0.          0.          0.          0.          0.
+!
+?{Name1:s}/{Name2:s}
+?THIS IS BEING POPULATED AS PART OF THE FIT
+{CAS1:12s}/{CAS2:12s} {model:3s}    {betaT:11.9f} {gammaT:11.9f} {betaV:11.9f} {gammaV:11.9f}  {Fij:11.9f}          0.
+                          TC1    0.          0.          0.          0.          0.          0.
+                          VC1    0.          0.          0.          0.          0.          0.
+!
+
+#MXM              !mixture model specification
+KWR  Lemmon & Jacobsen model for the R32/125 mixture
+?LITERATURE REFERENCE\
+?Lemmon, E.W. and Jacobsen, R.T
+?"Equations of State for Mixtures of R-32, R-125, R-134a, R-143a, and R-152a,"
+?J. Phys. Chem. Ref. Data, Volume 33, Number 2, pp. 593-620, 2004.
+?\
+!end of info section
+  zeta      xi      Fpq      beta    gamma   not used   !descriptors for binary-specific parameters
+  0.0      0.0      0.0      1.0      1.0      0.0      !default values (i.e. ideal-solution)
+  8  4  0    0  0     0  0               !Nterm, Nxcoef, spare, Nspecterms, Nspeccoefs, spare, spare
+ -0.72955E-02           4.5    2.   1.   !a(i),t(i),d(i),e(i)
+  0.78035E-01           0.57   5.   1.
+  0.61007E+00           1.9    1.   2.
+  0.64246E+00           1.2    3.   2.
+  0.14965E-01           0.5    9.   2.
+ -0.34049E+00           2.6    2.   3.
+  0.85658E-01          11.4    3.   3.
+ -0.64429E-01           4.5    6.   3.
+
+
+#MXM              !mixture model specification
+KWS  Lemmon & Jacobsen model for the R32/134a mixture
+?LITERATURE REFERENCE\
+?Lemmon, E.W. and Jacobsen, R.T
+?"Equations of State for Mixtures of R-32, R-125, R-134a, R-143a, and R-152a,"
+?J. Phys. Chem. Ref. Data, Volume 33, Number 2, pp. 593-620, 2004.
+?\
+!end of info section
+  zeta      xi      Fpq      beta    gamma   not used   !descriptors for binary-specific parameters
+  0.0      0.0      0.0      1.0      1.0      0.0      !default values (i.e. ideal-solution)
+  4  4  0    0  0     0  0               !Nterm, Nxcoef, spare, Nspecterms, Nspeccoefs, spare, spare
+  0.22909E+00           1.9    1.   1.   !a(i),t(i),d(i),e(i)
+  0.94074E-01           0.25   3.   1.
+  0.39876E-03           0.07   8.   1.
+  0.21133E-01           2.0    1.   2.
+
+
+#MXM              !mixture model specification
+KWT  Lemmon & Jacobsen model for refrigerant mixtures
+?LITERATURE REFERENCE\
+?Lemmon, E.W. and Jacobsen, R.T
+?"Equations of State for Mixtures of R-32, R-125, R-134a, R-143a, and R-152a,"
+?J. Phys. Chem. Ref. Data, Volume 33, Number 2, pp. 593-620, 2004.
+?\
+!end of info section
+  zeta      xi      Fpq      beta    gamma   not used   !descriptors for binary-specific parameters
+  0.0      0.0      0.0      1.0      1.0      0.0      !default values (i.e. ideal-solution)
+  4  4  0    0  0     0  0               !Nterm, Nxcoef, spare, Nspecterms, Nspeccoefs, spare, spare
+ -0.13073E-01           7.4    1.   1.   !a(i),t(i),d(i),e(i)
+  0.18259E-01           0.35   3.   1.
+  0.81299E-05          10.0   11.   2.
+  0.78496E-02           5.3    2.   3.
+
+
+#MXM              !mixture model specification
+KW0  Kunz and Wagner model for hydrocarbon mixtures
+?LITERATURE REFERENCE\
+?Kunz, O., Klimeck, R., Wagner, W., Jaeschke, M.
+? The GERG-2004 Wide-Range Equation of State for Natural Gases and Other Mixtures.
+? GERG Technical Monograph 15. Fortschr.-Ber. VDI, VDI-Verlag, D�sseldorf, 2007.
+?\
+?\
+?Kunz, O. and Wagner, W.
+? The GERG-2008 Wide-Range Equation of State for Natural Gases and Other Mixtures:
+? An Expansion of GERG-2004.
+? J. Chem. Eng. Data, 57(11):3032-3091, 2012.
+?\
+!end of info section
+ BetaT    GammaT   BetaV    GammaV    Fij    not used   !descriptors for binary-specific parameters
+  1.0      1.0      1.0      1.0      0.0      0.0      !default values (i.e. ideal-solution)
+ 10  3  0    0  0     0  0               !Nterm, Nxcoef, spare, Nspecterms, Nspeccoefs, spare, spare
+  0.25574776844118d1    1.0    1.        !a(i),t(i),d(i)
+ -0.79846357136353d1    1.55   1.
+  0.47859131465806d1    1.7    1.
+ -0.73265392369587      0.25   2.
+  0.13805471345312d1    1.35   2.
+  0.28349603476365      0.0    3.
+ -0.49087385940425      1.25   3.
+ -0.10291888921447      0.0    4.
+  0.11836314681968      0.7    4.
+  0.55527385721943d-4   5.4    4.
+
+
+#MXM              !mixture model specification
+KW1  Kunz and Wagner model for hydrocarbon mixtures
+?LITERATURE REFERENCE\
+?Kunz, O., Klimeck, R., Wagner, W., Jaeschke, M.
+? The GERG-2004 Wide-Range Equation of State for Natural Gases and Other Mixtures.
+? GERG Technical Monograph 15. Fortschr.-Ber. VDI, VDI-Verlag, D�sseldorf, 2007.
+?\
+?Kunz, O. and Wagner, W.
+? The GERG-2008 Wide-Range Equation of State for Natural Gases and Other Mixtures:
+? An Expansion of GERG-2004.
+? J. Chem. Eng. Data, 57(11):3032-3091, 2012.
+?\
+?Methane-Ethane
+!end of info section
+ BetaT    GammaT   BetaV    GammaV    Fij    not used   !descriptors for binary-specific parameters
+  1.0      1.0      1.0      1.0      0.0      0.0      !default values (i.e. ideal-solution)
+  2  3  0   10  7     0  0               !Nterm, Nxcoef, spare, Nspecterms, Nspeccoefs, spare, spare
+ -0.80926050298746d-3   0.65   3.        !a(i),t(i),d(i),eta(i),epsilon(i),beta(i),gamma(i)
+ -0.75381925080059d-3   1.55   4.
+ -0.41618768891219d-1   3.1    1.   1.     0.5    1.     0.5
+ -0.23452173681569      5.9    2.   1.     0.5    1.     0.5
+  0.14003840584586      7.05   2.   1.     0.5    1.     0.5
+  0.63281744807738d-1   3.35   2.   0.875  0.5    1.25   0.5
+ -0.34660425848809d-1   1.2    2.   0.75   0.5    1.5    0.5
+ -0.23918747334251      5.8    2.   0.5    0.5    2.     0.5
+  0.19855255066891d-2   2.7    2.   0.     0.5    3.     0.5
+  0.61777746171555d1    0.45   3.   0.     0.5    3.     0.5
+ -0.69575358271105d1    0.55   3.   0.     0.5    3.     0.5
+  0.10630185306388d1    1.95   3.   0.     0.5    3.     0.5
+
+
+#MXM              !mixture model specification
+KW2  Kunz and Wagner model for hydrocarbon mixtures
+?LITERATURE REFERENCE\
+?Kunz, O., Klimeck, R., Wagner, W., Jaeschke, M.
+? The GERG-2004 Wide-Range Equation of State for Natural Gases and Other Mixtures.
+? GERG Technical Monograph 15. Fortschr.-Ber. VDI, VDI-Verlag, D�sseldorf, 2007.
+?\
+?Kunz, O. and Wagner, W.
+? The GERG-2008 Wide-Range Equation of State for Natural Gases and Other Mixtures:
+? An Expansion of GERG-2004.
+? J. Chem. Eng. Data, 57(11):3032-3091, 2012.
+?\
+?Methane-Propane
+!end of info section
+ BetaT    GammaT   BetaV    GammaV    Fij    not used   !descriptors for binary-specific parameters
+  1.0      1.0      1.0      1.0      0.0      0.0      !default values (i.e. ideal-solution)
+  5  3  0    4  7     0  0               !Nterm, Nxcoef, spare, Nspecterms, Nspeccoefs, spare, spare
+  0.13746429958576d-1   1.85   3.        !a(i),t(i),d(i),eta(i),epsilon(i),beta(i),gamma(i)
+ -0.74425012129552d-2   3.95   3.
+ -0.45516600213685d-2   0.0    4.
+ -0.54546603350237d-2   1.85   4.
+  0.23682016824471d-2   3.85   4.
+  0.18007763721438      5.25   1.   0.25   0.5    0.75   0.5
+ -0.44773942932486      3.85   1.   0.25   0.5    1.     0.5
+  0.19327374888200d-1   0.2    1.   0.     0.5    2.     0.5
+ -0.30632197804624      6.5    2.   0.     0.5    3.     0.5
+
+
+#MXM              !mixture model specification
+KW3  Kunz and Wagner model for hydrocarbon mixtures
+?LITERATURE REFERENCE\
+?Kunz, O., Klimeck, R., Wagner, W., Jaeschke, M.
+? The GERG-2004 Wide-Range Equation of State for Natural Gases and Other Mixtures.
+? GERG Technical Monograph 15. Fortschr.-Ber. VDI, VDI-Verlag, D�sseldorf, 2007.
+?\
+?Kunz, O. and Wagner, W.
+? The GERG-2008 Wide-Range Equation of State for Natural Gases and Other Mixtures:
+? An Expansion of GERG-2004.
+? J. Chem. Eng. Data, 57(11):3032-3091, 2012.
+?\
+?Methane-Nitrogen
+!end of info section
+ BetaT    GammaT   BetaV    GammaV    Fij    not used   !descriptors for binary-specific parameters
+  1.0      1.0      1.0      1.0      0.0      0.0      !default values (i.e. ideal-solution)
+  2  3  0    7  7     0  0               !Nterm, Nxcoef, spare, Nspecterms, Nspeccoefs, spare, spare
+ -0.98038985517335d-2   0.0    1.        !a(i),t(i),d(i),eta(i),epsilon(i),beta(i),gamma(i)
+  0.42487270143005d-3   1.85   4.
+ -0.34800214576142d-1   7.85   1.   1.     0.5    1.     0.5
+ -0.13333813013896      5.4    2.   1.     0.5    1.     0.5
+ -0.11993694974627d-1   0.0    2.   0.25   0.5    2.5    0.5
+  0.69243379775168d-1   0.75   2.   0.     0.5    3.     0.5
+ -0.31022508148249      2.8    2.   0.     0.5    3.     0.5
+  0.24495491753226      4.45   2.   0.     0.5    3.     0.5
+  0.22369816716981      4.25   3.   0.     0.5    3.     0.5
+
+
+#MXM              !mixture model specification
+KW4  Kunz and Wagner model for hydrocarbon mixtures
+?LITERATURE REFERENCE\
+?Kunz, O., Klimeck, R., Wagner, W., Jaeschke, M.
+? The GERG-2004 Wide-Range Equation of State for Natural Gases and Other Mixtures.
+? GERG Technical Monograph 15. Fortschr.-Ber. VDI, VDI-Verlag, D�sseldorf, 2007.
+?\
+?Kunz, O. and Wagner, W.
+? The GERG-2008 Wide-Range Equation of State for Natural Gases and Other Mixtures:
+? An Expansion of GERG-2004.
+? J. Chem. Eng. Data, 57(11):3032-3091, 2012.
+?\
+?Methane-Carbon dioxide
+!end of info section
+ BetaT    GammaT   BetaV    GammaV    Fij    not used   !descriptors for binary-specific parameters
+  1.0      1.0      1.0      1.0      0.0      0.0      !default values (i.e. ideal-solution)
+  3  3  0    3  7     0  0               !Nterm, Nxcoef, spare, Nspecterms, Nspeccoefs, spare, spare
+ -0.10859387354942      2.6    1.        !a(i),t(i),d(i),eta(i),epsilon(i),beta(i),gamma(i)
+  0.80228576727389d-1   1.95   2.
+ -0.93303985115717d-2   0.0    3.
+  0.40989274005848d-1   3.95   1.   1.     0.5    1.     0.5
+ -0.24338019772494      7.95   2.   0.5    0.5    2.     0.5
+  0.23855347281124      8.0    3.   0.     0.5    3.     0.5
+
+
+#MXM              !mixture model specification
+KW5  Kunz and Wagner model for hydrocarbon mixtures
+?LITERATURE REFERENCE\
+?Kunz, O., Klimeck, R., Wagner, W., Jaeschke, M.
+? The GERG-2004 Wide-Range Equation of State for Natural Gases and Other Mixtures.
+? GERG Technical Monograph 15. Fortschr.-Ber. VDI, VDI-Verlag, D�sseldorf, 2007.
+?\
+?Kunz, O. and Wagner, W.
+? The GERG-2008 Wide-Range Equation of State for Natural Gases and Other Mixtures:
+? An Expansion of GERG-2004.
+? J. Chem. Eng. Data, 57(11):3032-3091, 2012.
+?\
+?Nitrogen-Carbon dioxide
+!end of info section
+ BetaT    GammaT   BetaV    GammaV    Fij    not used   !descriptors for binary-specific parameters
+  1.0      1.0      1.0      1.0      0.0      0.0      !default values (i.e. ideal-solution)
+  2  3  0    4  7     0  0               !Nterm, Nxcoef, spare, Nspecterms, Nspeccoefs, spare, spare
+  0.28661625028399      1.85   2.        !a(i),t(i),d(i),eta(i),epsilon(i),beta(i),gamma(i)
+ -0.10919833861247      1.4    3.
+ -0.11374032082270d1    3.2    1.   0.25   0.5    0.75   0.5
+  0.76580544237358      2.5    1.   0.25   0.5    1.     0.5
+  0.42638000926819d-2   8.0    1.   0.     0.5    2.     0.5
+  0.17673538204534      3.75   2.   0.     0.5    3.     0.5
+
+
+#MXM              !mixture model specification
+KW6  Kunz and Wagner model for hydrocarbon mixtures
+?LITERATURE REFERENCE\
+?Kunz, O., Klimeck, R., Wagner, W., Jaeschke, M.
+? The GERG-2004 Wide-Range Equation of State for Natural Gases and Other Mixtures.
+? GERG Technical Monograph 15. Fortschr.-Ber. VDI, VDI-Verlag, D�sseldorf, 2007.
+?\
+?Kunz, O. and Wagner, W.
+? The GERG-2008 Wide-Range Equation of State for Natural Gases and Other Mixtures:
+? An Expansion of GERG-2004.
+? J. Chem. Eng. Data, 57(11):3032-3091, 2012.
+?\
+?Nitrogen-Ethane
+!end of info section
+ BetaT    GammaT   BetaV    GammaV    Fij    not used   !descriptors for binary-specific parameters
+  1.0      1.0      1.0      1.0      0.0      0.0      !default values (i.e. ideal-solution)
+  3  3  0    3  7     0  0               !Nterm, Nxcoef, spare, Nspecterms, Nspeccoefs, spare, spare
+ -0.47376518126608      0.0    2.        !a(i),t(i),d(i),eta(i),epsilon(i),beta(i),gamma(i)
+  0.48961193461001      0.05   2.
+ -0.57011062090535d-2   0.0    3.
+ -0.19966820041320      3.65   1.   1.     0.5    1.     0.5
+ -0.69411103101723      4.9    2.   1.     0.5    1.     0.5
+  0.69226192739021      4.45   2.   0.875  0.5    1.25   0.5
+
+
+#MXM              !mixture model specification
+KW7  Kunz and Wagner model for hydrocarbon mixtures
+?LITERATURE REFERENCE\
+?Kunz, O., Klimeck, R., Wagner, W., Jaeschke, M.
+? The GERG-2004 Wide-Range Equation of State for Natural Gases and Other Mixtures.
+? GERG Technical Monograph 15. Fortschr.-Ber. VDI, VDI-Verlag, D�sseldorf, 2007.
+?\
+?Kunz, O. and Wagner, W.
+? The GERG-2008 Wide-Range Equation of State for Natural Gases and Other Mixtures:
+? An Expansion of GERG-2004.
+? J. Chem. Eng. Data, 57(11):3032-3091, 2012.
+?\
+?Methane-Hydrogen
+!end of info section
+ BetaT    GammaT   BetaV    GammaV    Fij    not used   !descriptors for binary-specific parameters
+  1.0      1.0      1.0      1.0      0.0      0.0      !default values (i.e. ideal-solution)
+  4  3  0    0  0     0  0               !Nterm, Nxcoef, spare, Nspecterms, Nspeccoefs, spare, spare
+ -0.25157134971934      2.0    1.        !a(i),t(i),d(i)
+ -0.62203841111983d-2  -1.0    3.
+  0.88850315184396d-1   1.75   3.
+ -0.35592212573239d-1   1.4    4.
+
+
+#MXM              !mixture model specification
+LIN  linear mixing rules modified by Kt and Kv
+?LITERATURE REFERENCE\
+?McLinden, M.O. and Klein, S.A.,
+? "A next generation refrigerant properties database,"
+? 6th International Refrigeration Conference at Purdue,
+? July 23-26, West Lafayette, IN, 1996.
+?\
+?A mixture Helmholtz free energy (HMX) model for refrigerant mixtures employing
+? simple linear mixing rules to define the reducing parameters.  The parameter
+? Kt is applied to the arithmetic mean of the component critical temperatures: \
+?\
+?  Treducing = sum(i=1,n) {{xi * Tcrit_i}}
+?            + sum(j=i+1,n) sum(i=1,n-1) {{(Kt - 1) xi xj 0.5*(Tcrit_i + Tcrit_j)}} \
+?\
+?and the parameter Kv is similarly applied to the arithmetic mean of the
+? component critical volumes: \
+?\
+?  Vreducing = sum(i=1,n) {{xi * Vcrit_i}}
+?            + sum(j=i+1,n) sum(i=1,n-1) {{(Kv - 1) xi xj 0.5*(Vcrit_i + Vcrit_j)}} \
+?\
+?  rho_reducing = 1/Vreducing.
+?
+!end of info section
+   Kt       Kv    not used not used not used not used   !descriptors for binary-specific parameters
+  1.0      1.0      0.0      0.0      0.0      0.0      !default values (i.e. ideal-solution)
+  1  4  0    0  0     0  0               !Nterm, Nxcoef, spare, Nspecterms, Nspeccoefs, spare, spare
+  1.0                   0.0    1.   0.   !a(i),t(i),d(i),e(i)
+
+
+@MXM              !mixture model specification
+i=j  trivial case--identical components
+?DESCRIPTION
+?This represents the trivial mixture case of identical components.  It is
+? included for use with some of the summations involved in mixture calculations.
+? This model should not be specified for any binary pair.
+?
+!end of info section
+not used not used not used not used not used not used   !descriptors for binary-specific parameters
+  0.0      0.0      0.0      0.0      0.0      0.0      !default values (i.e. ideal-solution)
+  1  4  0    0  0     0  0               !Nterm, Nxcoef, spare, Nspecterms, Nspeccoefs, spare, spare
+  1.0                   0.0    1.   0.   !a(i),t(i),d(i),e(i)
+
+
+#MXM              !mixture model specification
+TR1  Tillner-Roth model for ammonia-water mixtures
+?LITERATURE REFERENCE\
+?Tillner-Roth, R. and Friend, D.G.,
+? "A Helmholtz free energy formulation of the thermodynamic properties
+? of the mixture {{water + ammonia}},"
+? J. Phys. Chem. Ref. Data, 27(1):63-96, 1998.
+?\
+?A fundamental equation of state for the Helmholtz free energy of the mixture
+? {{ammonia+water}} is presented which covers the thermodynamic space between the
+? solid-liquid-vapor boundary and the critical locus. It is also valid in the
+? vapor and liquid phase for pressures up to 40 MPa. It represents VLS properties
+? with an uncertainty of 0.01 of liquid and vapor compositions. Typical uncertainties
+? in the single-phase regions are 0.3% for the density and +/- 200 J/mol for enthalpies.\
+?\
+!end of info section
+   Kt       Kv     alpha     beta    gamma   not used   !descriptors for binary-specific parameters
+  1.0      1.0      1.0      1.0      1.0      0.0      !default values (i.e. ideal solution)
+ 14  4  0    0  0     0  0               !Nterm, Nxcoef, spare, Nspecterms, Nspeccoefs, spare, spare
+ -1.855822d-2           1.5    4.   0.   !a(i),t(i),d(i),e(i)
+  5.258010d-2           0.5    5.   1.
+  3.552874d-10          6.5   15.   1.
+  5.451379d-6           1.75  12.   1.
+ -5.998546d-13         15.0   12.   1.
+ -3.687808d-6           6.0   15.   2.
+  0.2586192d0          -1.0    4.   1.
+ -1.368072d-8           4.0   15.   1.
+  1.226146d-2           3.5    4.   1.
+ -7.181443d-2           0.0    5.   1.
+  9.970849d-2          -1.0    6.   2.
+  1.0584086d-3          8.0   10.   2.
+ -0.1963687d0           7.5    6.   2.
+ -0.7777897d0           4.0    2.   2.
+
+
+@END
+c        1         2         3         4         5         6         7         8
+c2345678901234567890123456789012345678901234567890123456789012345678901234567890
