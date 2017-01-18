@@ -11,7 +11,7 @@ By Ian H. Bell, NIST (ian.bell@nist.gov)
 
 LICENSE: public domain, but please reference paper
 """
-
+from __future__ import print_function
 import sys, traceback, time
 from multiprocessing import Process, Pipe
 
@@ -84,7 +84,7 @@ class Spawner(object):
             p['proc'].daemon = True
             p['proc'].start()
             self.processes.append(p)
-            print len(self.inputs), ' inputs remain'
+            print(len(self.inputs), ' inputs remain')
         else:
             return
         
@@ -95,12 +95,12 @@ class Spawner(object):
             self.add_process()
             for p in self.processes:
                 if p['pipe_stdio_mine'].poll():
-                    print 'p', p['proc'].pid, '>', p['pipe_stdio_mine'].recv()
+                    print('p', p['proc'].pid, '>', p['pipe_stdio_mine'].recv())
                 if p['pipe_mine'].poll():
                     res = p['pipe_mine'].recv()
                     if res == 'p'+str(p['proc'].pid)+' DONE':
                         while p['pipe_stdio_mine'].poll():
-                            print 'p', p['proc'].pid, '>', p['pipe_stdio_mine'].recv()
+                            print('p', p['proc'].pid, '>', p['pipe_stdio_mine'].recv())
                         p['proc'].join()
                         self.processes.pop(self.processes.index(p))
                         #print 'process w/ pid ' + str(p['proc'].pid) + ' is done'
@@ -120,8 +120,8 @@ if __name__=='__main__':
     p['pipe_stdio_mine'], p['pipe_stdio_theirs'] = Pipe()
     g = Guppy(p['pipe_theirs'], f, [1,2,3])
     g.run()
-    print p['pipe_mine'].recv()
+    print(p['pipe_mine'].recv())
     
     # Call the spawner
     spawner = Spawner([dict(target = f, args = (range(1, n),)) for n in range(500)], Nproc_max = 6)
-    print spawner.run()
+    print(spawner.run())
