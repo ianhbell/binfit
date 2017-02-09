@@ -40,8 +40,12 @@ from six.moves import xrange # for python 2/3 compatibility
 #jj['ALTERNATIVE_REFPROP_PATH'] = '/home/ihb/fitting/'
 #jj = CP.set_config_as_json_string(json.dumps(jj))
 
+# Set to True to force the code to only fit gammaT
+force_only_gammaT = False
+
 # Open the template file for REFPROP
-with open('HMX.BNC.template','r') as fp:
+HMX_template_PATH = os.path.join(os.path.dirname(__file__), 'HMX.BNC.template')
+with open(HMX_template_PATH, 'r') as fp:
     template = fp.read()
     
 def pprint(*args):
@@ -65,7 +69,7 @@ def collect_binary(df, pair):
              & (~np.isnan(df['p (Pa)'])) & (np.isnan(df['y[0] (-)']) 
                 | ((df['y[0] (-)'] > 0) & (df['y[0] (-)'] < 1))))
     
-    lib = df[mask].sort('fluid[0] (-)')
+    lib = df[mask].sort_values(by='fluid[0] (-)')
     
     if len(set(lib['fluid[0] (-)'])) > 1:
         fluid = list(set(lib['fluid[0] (-)']))[1]
@@ -381,7 +385,7 @@ def deap_optimizer(df, prefix = '', gammaT0 = None):
     x1 = list(set(df['x[0] (-)']))
     T = list(set(df['T (K90)']))
     if (len(x1) == 1 or len(T) == 1 or np.min(x1) > 0.99*np.max(x1) 
-        or np.min(T) > 0.99*np.max(T)):
+        or np.min(T) > 0.99*np.max(T)) or force_only_gammaT:
         only_fit_gammaT = True
     else:
         only_fit_gammaT = False
