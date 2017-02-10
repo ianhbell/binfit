@@ -40,9 +40,6 @@ from six.moves import xrange # for python 2/3 compatibility
 #jj['ALTERNATIVE_REFPROP_PATH'] = '/home/ihb/fitting/'
 #jj = CP.set_config_as_json_string(json.dumps(jj))
 
-# Set to True to force the code to only fit gammaT
-force_only_gammaT = False
-
 # Open the template file for REFPROP
 HMX_template_PATH = os.path.join(os.path.dirname(__file__), 'HMX.BNC.template')
 with open(HMX_template_PATH, 'r') as fp:
@@ -370,7 +367,7 @@ def eaSimple(population, toolbox, cxpb, mutpb, ngen, stats=None,
 
     return population, logbook
 
-def deap_optimizer(df, prefix = '', gammaT0 = None):
+def deap_optimizer(df, prefix = '', gammaT0 = None, force_only_gammaT = False):
     """
     This function actually calls deap and does the optimization, arriving at 
     the optimal values for beta_T and gamma_T
