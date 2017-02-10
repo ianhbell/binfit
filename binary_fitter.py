@@ -458,18 +458,15 @@ def deap_optimizer(df, prefix = '', gammaT0 = None, force_only_gammaT = False):
                         verbose=True,
                         timeout = 7200)
     
-    with open(prefix + '&'.join(fluids)+'-deap-data.csv','w') as fp:
-        fp.write('betaT,gammaT,fitness\n')
-        for p in pop:
-            if only_fit_gammaT:
-                kwargs = dict(betaT = 1.0, 
-                              gammaT = p[0], 
-                              err = p.fitness.values[0])
-            else:
-                kwargs = dict(betaT = p[0], 
-                              gammaT = p[1], 
-                              err = p.fitness.values[0])
-            fp.write('{betaT:g},{gammaT:g},{err:g}\n'.format(**kwargs))
+    outs = []
+    for p in pop:
+        kwargs = dict(betaT = p[0] if not only_fit_gammaT else 1.0, 
+                      gammaT = p[1] if not only_fit_gammaT else p[0], 
+                      err = p.fitness.values[0])
+        outs.append(kwargs)
+    df = pandas.DataFrame(outs)
+    df = df.sort_values(by='err')
+    df.to_csv(prefix + '&'.join(fluids)+'-deap-data.csv')
             
     with open(prefix + '&'.join(fluids)+'-deap-log.csv','w') as fp:
         fp.write(str(log))
