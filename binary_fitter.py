@@ -112,6 +112,7 @@ def write_hmx_bnc(vle, params):
         assert(len(fluid0) == 1)
         assert(len(fluid1) == 1)
         fluids = fluid0.pop(), fluid1.pop()
+    assert(len(params)==5)
     
     # Create a temporary directory
     tmpdir = tempfile.mkdtemp()
@@ -119,16 +120,16 @@ def write_hmx_bnc(vle, params):
     # Inputs to be written into the HMX.BNC file
     CAS1 = CoolProp.CoolProp.get_fluid_param_string('REFPROP::'+fluids[0],'CAS')
     CAS2 = CoolProp.CoolProp.get_fluid_param_string('REFPROP::'+fluids[1],'CAS')
-    inputs = dict(  model = 'KWG',
+    inputs = dict(  model = 'KW0',
                     Name1 = fluids[0],
                     CAS1 = CAS1,
                     Name2 = fluids[1],
                     CAS2 = CAS2,
                     betaT = float(params[0]),
                     gammaT = float(params[1]),
-                    betaV = params[2],
-                    gammaV = params[3],
-                    Fij = params[4]
+                    betaV = float(params[2]),
+                    gammaV = float(params[3]),
+                    Fij = float(params[4])
                 )
                 
     hmx_bnc_path = os.path.join(tmpdir, 'HMX.BNC')
@@ -179,87 +180,98 @@ def generate_vle_error(vle, HEOS, vle_type = 'bubble'):
     # Percentage relative error
     r = (pgiven - pcalc)/pgiven*100
     return r, pcalc, pgiven
+
+def pad_parameters(params, fit_bits, defaults = None):
+    """ Pad out the parameters list with the default values """
+    if defaults is None:
+        defaults = [1,1,1,1,0]
+    o = []
+    assert(len(defaults)==5)
+    j = 0
+    for i in range(5):
+        if fit_bits[i]:
+            o.append(params[j])
+            j += 1
+        else:
+            o.append(defaults[i])
+    return o
     
-def apply_betaTgammaT(df, betaT, gammaT, ofname, Nloops = 100, Npoints_selected = 10):
+def apply_betagamma(df, parameters, ofname, Nloops = 100, Npoints_selected = 10, fit_bits = None):
     
     fluids = [df['fluid[0] (-)'].iloc[0], df['fluid[1] (-)'].iloc[0]]
     library = []
     tic = time.time()
-    
-    for j, (_betaT, _gammaT) in enumerate(zip(betaT, gammaT)):
-        
-        runt1 = time.time()
-        tmpdir = write_hmx_bnc(df, [_betaT, _gammaT, 1, 1, 0])
-        
-        HEOS = CoolProp.AbstractState("REFPROP", "&".join(fluids))
 
-        Nfail = 0
+    # Pad out the parameters with default values as necessary
+    assert(fit_bits is not None) # make sure fit_bits is provided as a keyword argument
+    parameters = pad_parameters(parameters, fit_bits)
         
-        data = []
-        for dummy_counter in xrange(Nloops):
-            # r is a vector of percentage relative errors in p
-            r, pcalc, pgiven = generate_vle_error(random_subset(df, 
-                                                                Npoints_selected), 
-                                                  HEOS, 
-                                                  'bubble')
-            Nfail += sum(np.abs(r) > 1e6)
-            err = np.sqrt(np.sum(r**2)) 
-            data.append(err)
-        # Fraction (0,1) of the runs that do not succeed and error out
-        # We want to be able to "correct" the objective function by applying 
-        # a penalty function if runs fail
-        fail_fraction = float(Nfail)/float(Nloops*Npoints_selected)
-        # pprint('fail_fraction:',fail_fraction)
-        
-        data = np.array(sorted(data))
-        err_Nbest = np.mean(data[0:5])
-        err_Nbestmedian = np.median(data[0:5])
-        
-        err_ok = data[(data < 1e6) & (~np.isnan(data))]
-        if np.size(err_ok) > 0:
-            err_okmean = np.mean(err_ok)
-            err_okmedian = np.median(err_ok)
-            err_okrsse = np.sqrt(np.sum(err_ok**2)/len(err_ok))
-        else:
-            err_okmean = 1e99
-            err_okmedian = 1e99
-            err_okrsse = 1e99
-        
-        loop_elapsed = time.time() - runt1
-        pprint('fluid1, fluid2, betaT, gammaT, err_okmean, err_okrsse:', 
-               fluids, float(_betaT), float(_gammaT), err_okmean, err_okrsse)
-        library.append((err_Nbest, err_Nbestmedian, err_okmean, err_okmedian, 
-                        err_okrsse, float(_betaT), float(_gammaT), 
-                        loop_elapsed))
-        
-        if (time.time() - tic) > 7200:
-            with open(ofname,'w') as fp:
-                fp.write('TIMEOUT')
+    runt1 = time.time()
+    tmpdir = write_hmx_bnc(df, parameters)
+    _betaT, _gammaT, _betaV, _gammaV, _Fij = parameters
     
-        # Clean up after ourselves
-        shutil.rmtree(tmpdir)
-        
-    (err_Nbest, err_Nbestmedian, err_okmean, err_okmedian, 
-        err_okrsse, betaT, gammaT, loop_elapsed) = zip(*library)
+    HEOS = CoolProp.AbstractState("REFPROP", "&".join(fluids))
+
+    Nfail = 0
+    
+    data = []
+    for dummy_counter in xrange(Nloops):
+        # r is a vector of percentage relative errors in p
+        r, pcalc, pgiven = generate_vle_error(random_subset(df, 
+                                                            Npoints_selected), 
+                                              HEOS, 
+                                              'bubble')
+        Nfail += sum(np.abs(r) > 1e6)
+        err = np.sqrt(np.sum(r**2)) 
+        data.append(err)
+    # Fraction (0,1) of the runs that do not succeed and error out
+    # We want to be able to "correct" the objective function by applying 
+    # a penalty function if runs fail
+    fail_fraction = float(Nfail)/float(Nloops*Npoints_selected)
+    # pprint('fail_fraction:',fail_fraction)
+    
+    data = np.array(sorted(data))
+    err_Nbest = np.mean(data[0:5])
+    err_Nbestmedian = np.median(data[0:5])
+    
+    err_ok = data[(data < 1e6) & (~np.isnan(data))]
+    if np.size(err_ok) > 0:
+        err_okmean = np.mean(err_ok)
+        err_okmedian = np.median(err_ok)
+        err_okrsse = np.sqrt(np.sum(err_ok**2)/len(err_ok))
+    else:
+        err_okmean = 1e99
+        err_okmedian = 1e99
+        err_okrsse = 1e99
+    
+    loop_elapsed = time.time() - runt1
+    me = {'err_Nbest': err_Nbest, 'err_Nbestmedian': err_Nbestmedian, 'err_okmean':err_okmean, 
+          'err_okmedian': err_okmedian, 'err_okrsse':err_okrsse, 
+          'betaT':_betaT, 'gammaT':_gammaT, 'betaV':_betaV, 'gammaV':_gammaV, 'Fij':_Fij,
+          'loop_elapsed':loop_elapsed}
+    pprint(me)
+    library.append(me)
+    
+    if (time.time() - tic) > 7200:
+        with open(ofname,'w') as fp:
+            fp.write('TIMEOUT')
+
+    # Clean up after ourselves
+    shutil.rmtree(tmpdir)
     
     if ofname:
-        pandas.DataFrame(dict(err = err_Nbest, err_Nbestmedian = err_Nbestmedian, 
-                              err_okmean = err_okmean, err_okmedian = err_okmedian, 
-                              betaT = betaT, gammaT = gammaT, 
-                              loop_elapsed = loop_elapsed)).to_csv(ofname)
+        pandas.DataFrame(library).to_csv(ofname)
+
     toc = time.time()
 
     # The penalty factor - F = 10^(penalty_factor*fail_fraction)
     penalty_factor = 3
 
     # If no results are ok, the mean of an empty array is NAN, so just return a huge number
-    if np.isnan(err_okmean[0]):
+    if np.isnan(err_okmean):
         return 1e10
     else:
-        if len(betaT) == 1:
-            return err_okmean[0]*10**(penalty_factor*fail_fraction)
-        else:
-            return err_okmean*10**(penalty_factor*fail_fraction)
+        return err_okmean*10**(penalty_factor*fail_fraction)
     
 def eaSimple(population, toolbox, cxpb, mutpb, ngen, stats=None,
              halloffame=None, verbose=True, timeout = 3600):
@@ -367,10 +379,24 @@ def eaSimple(population, toolbox, cxpb, mutpb, ngen, stats=None,
 
     return population, logbook
 
-def deap_optimizer(df, prefix = '', gammaT0 = None, force_only_gammaT = False):
+def deap_optimizer(df, prefix = '', gammaT0 = None, force_only_gammaT = False, fit_bits = None):
     """
     This function actually calls deap and does the optimization, arriving at 
     the optimal values for beta_T and gamma_T
+
+    Parameters
+    ==========
+    df: pandas.DataFrame
+        Contains the VLE data
+    prefix: string 
+        A path prefix included on any files written out at the end of this function
+    force_only_gammaT : bool
+        If True, override fit_bits and only fit gammaT
+    fit_bits : iterable
+        A 5-element iterable object, in each element, a True (fit this parameter) or 
+        False (don't fit this parameter) for each of the fittable parameters
+        betaT,gammaT,betaV,gammaV,Fij (in order).  For example [1,1,0,0,0] says fit 
+        betaT and gammaT
     """
     tic = time.time()
     fluids = df['fluid[0] (-)'].iloc[0], df['fluid[1] (-)'].iloc[0]
@@ -402,42 +428,57 @@ def deap_optimizer(df, prefix = '', gammaT0 = None, force_only_gammaT = False):
             return False
     
     def evalOneMax(parameters, df = None, prefix = ''):
-        if len(parameters) == 1:
-            betaT = [1.0]
-            gammaT = [parameters[0]]
-        else:
-            betaT = [parameters[0]]
-            gammaT = [parameters[1]]
-        err = apply_betaTgammaT(df, betaT, gammaT, '', Nloops = 100, Npoints_selected = 5)
+        err = apply_betagamma(df, parameters, '', Nloops = 100, Npoints_selected = 5, fit_bits = fit_bits)
         with open(prefix + '&'.join(fluids)+'-deap-logger.csv', 'a+') as fp:
-            fp.write('{0:g},{1:g},{2:g}\n'.format(betaT[0], gammaT[0], err))
+            fp.write('{0:s},{1:g}\n'.format(str(parameters), err))
         return (err,)
         
     toolbox = base.Toolbox()
     # See:
     # http://deap.readthedocs.org/en/master/tutorials/basic/part1.html#a-funky-one
     
-    toolbox.register("attr_betaT", random.uniform, 0.85, 1.0/0.85)
+    toolbox.register("attr_beta", random.uniform, 0.85, 1.0/0.85)
+    toolbox.register("attr_gamma", random.uniform, 0.5, 4)
+    toolbox.register("attr_Fij", random.uniform, 0.5, 4)
+
     if gammaT0 is not None and len(gammaT0) == 2:
         toolbox.register("attr_gammaT", random.uniform, gammaT0[0], gammaT0[1])
     else:
         toolbox.register("attr_gammaT", random.uniform, 0.5, 4.0)
+
+    if fit_bits is None:
+        # Fit betaT, gammaT, but not betaV, gammaV, or Fij
+        fit_bits = [1,1,0,0,0]
+
     if only_fit_gammaT:
-        toolbox.register("individual", tools.initCycle, creator.Individual, 
-                         (toolbox.attr_gammaT,), n = 1)
+        generators = (toolbox.attr_gammaT,)
     else:
-        toolbox.register("individual", tools.initCycle, creator.Individual, 
-                         (toolbox.attr_betaT, toolbox.attr_gammaT), n = 1)
+        gens = []
+        if fit_bits[0]:
+            gens.append(toolbox.attr_beta)
+        if fit_bits[1]:
+            gens.append(toolbox.attr_gamma)
+        if fit_bits[2]:
+            gens.append(toolbox.attr_beta)
+        if fit_bits[3]:
+            gens.append(toolbox.attr_gamma)
+        if fit_bits[4]:
+            gens.append(toolbox.attr_Fij)
+        generators = tuple(gens)
+
+    # Create the correctly sized individual
+    toolbox.register("individual", tools.initCycle, creator.Individual, 
+                         generators, n = 1)
     toolbox.register("population", tools.initRepeat, list, toolbox.individual)
     toolbox.register("evaluate", evalOneMax, df = df, prefix = prefix)
     if 'DeltaPenality' in dir(tools):
         toolbox.decorate("evaluate", tools.DeltaPenality(feasible, 100000))
+
     # If two individuals mate, interpolate between them, allow for a bit of extrapolation
     toolbox.register("mate", tools.cxBlend, alpha = 0.3) 
-    if only_fit_gammaT:
-        sigma = [0.01]
-    else:
-        sigma = [0.01, 0.01]
+
+    # 
+    sigma = [0.01]*len(generators)
 
     toolbox.register("mutate", tools.mutGaussian, mu = 0, sigma = sigma, indpb=1.0)
     # The greater the tournament size, the greater the selection pressure 
@@ -460,8 +501,8 @@ def deap_optimizer(df, prefix = '', gammaT0 = None, force_only_gammaT = False):
     
     outs = []
     for p in pop:
-        kwargs = dict(betaT = p[0] if not only_fit_gammaT else 1.0, 
-                      gammaT = p[1] if not only_fit_gammaT else p[0], 
+        pp = pad_parameters(list(p), fit_bits)
+        kwargs = dict(betaT = pp[0], gammaT = pp[1], betaV = pp[2], gammaV = pp[3], Fij = pp[4],
                       err = p.fitness.values[0])
         outs.append(kwargs)
     df = pandas.DataFrame(outs)
