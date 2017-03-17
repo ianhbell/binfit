@@ -67,6 +67,7 @@ def collect_binary(df, pair):
                 | ((df['y[0] (-)'] > 0) & (df['y[0] (-)'] < 1))))
     
     lib = df[mask].sort_values(by='fluid[0] (-)')
+    assert(len(lib) > 0)
     
     if len(set(lib['fluid[0] (-)'])) > 1:
         fluid = list(set(lib['fluid[0] (-)']))[1]
@@ -533,7 +534,7 @@ if __name__=='__main__':
 
     inputs = [
               dict(target = deap_optimizer, 
-                   args = (collect_binary(lib, ('DECANE','PROPANE'))),
+                   args = (collect_binary(lib, ('DECANE','PROPANE')),),
                    )
              ]
     spawn = Spawner(inputs, 
