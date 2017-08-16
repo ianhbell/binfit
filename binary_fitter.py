@@ -31,19 +31,11 @@ import tempfile, os, json, random, shutil, sys, time
 # Other packages
 import pandas
 import numpy as np
-import CoolProp, CoolProp.CoolProp as CP
 from deap import algorithms, base, creator, tools
 from six.moves import xrange # for python 2/3 compatibility
 
-# Set the REFPROP path (if needed, mostly on linux where REFPROP needs a helping hand)
-#jj = json.loads(CP.get_config_as_json_string())
-#jj['ALTERNATIVE_REFPROP_PATH'] = '/home/ihb/fitting/'
-#jj = CP.set_config_as_json_string(json.dumps(jj))
-
-# Open the template file for REFPROP
-HMX_template_PATH = os.path.join(os.path.dirname(__file__), 'HMX.BNC.template')
-with open(HMX_template_PATH, 'r') as fp:
-    template = fp.read()
+# Use the REFPROP wrapper provided by the ctypes python wrapper
+from ctREFPROP.ctREFPROP import REFPROPFunctionLibrary
     
 def pprint(*args):
     """ 
@@ -99,54 +91,8 @@ def random_subset(lib, N):
     #random.seed(0) # Turn off randomness
     indices = random.sample(xrange(len(lib)), min(N, len(lib)))
     return lib.iloc[indices].copy()
-
-def write_hmx_bnc(vle, params):
-    """
-    Write the HMX.BNC file for REFPROP, including the binary interaction 
-    parameters 
-    """
-    if isinstance(vle,list):
-        fluids = vle
-    else:
-        fluid0 = set(vle['fluid[0] (-)'])
-        fluid1 = set(vle['fluid[1] (-)'])
-        assert(len(fluid0) == 1)
-        assert(len(fluid1) == 1)
-        fluids = fluid0.pop(), fluid1.pop()
-    assert(len(params)==5)
     
-    # Create a temporary directory
-    tmpdir = tempfile.mkdtemp()
-    
-    # Inputs to be written into the HMX.BNC file
-    CAS1 = CoolProp.CoolProp.get_fluid_param_string('REFPROP::'+fluids[0],'CAS')
-    CAS2 = CoolProp.CoolProp.get_fluid_param_string('REFPROP::'+fluids[1],'CAS')
-    inputs = dict(  model = 'KW0',
-                    Name1 = fluids[0],
-                    CAS1 = CAS1,
-                    Name2 = fluids[1],
-                    CAS2 = CAS2,
-                    betaT = float(params[0]),
-                    gammaT = float(params[1]),
-                    betaV = float(params[2]),
-                    gammaV = float(params[3]),
-                    Fij = float(params[4])
-                )
-                
-    hmx_bnc_path = os.path.join(tmpdir, 'HMX.BNC')
-    
-    # Write the custom HMX.BNC file
-    with open(hmx_bnc_path, 'w') as fp:
-        fp.write(template.format(**inputs))
-    
-    # Tell CoolProp to use this new file for REFPROP
-    jj = json.loads(CP.get_config_as_json_string())
-    jj['ALTERNATIVE_REFPROP_HMX_BNC_PATH'] = hmx_bnc_path
-    jj = CP.set_config_as_json_string(json.dumps(jj))
-    
-    return tmpdir
-    
-def generate_vle_error(vle, HEOS, vle_type = 'bubble'):
+def generate_vle_error(vle, RP, vle_type = 'bubble'):
     """
     Call the VLE routines to generate the bubble pressure, 
     as well as the error in the bubble pressure as compared
@@ -159,20 +105,21 @@ def generate_vle_error(vle, HEOS, vle_type = 'bubble'):
 
     for i in xrange(N):
         if vle_type == 'bubble':
-            HEOS.set_mole_fractions([vle['x[0] (-)'].iloc[i], 
-                                     vle['x[1] (-)'].iloc[i]])
+            z = [vle['x[0] (-)'].iloc[i], vle['x[1] (-)'].iloc[i]]
             Q = 0
         elif vle_type == 'dew':
-            HEOS.set_mole_fractions([vle['y[0] (-)'].iloc[i], 
-                                     vle['y[1] (-)'].iloc[i]])
+            z = [vle['y[0] (-)'].iloc[i], vle['y[1] (-)'].iloc[i]]
             Q = 1
         else:
             raise ValueError()
             
         try:
-            HEOS.update(CoolProp.QT_INPUTS, Q, vle['T (K90)'].iloc[i])
-            pcalc[i] = HEOS.p()
-            #pprint(i, vle['T (K90)'].iloc[i], HEOS.p())
+            kq = 1
+            o = RP.TQFLSHdll(vle['T (K90)'].iloc[i], Q, z, kq)
+            pcalc[i] = o.P*1000
+            if o.ierr > 100:
+                raise ValueError(o.herr)
+            #pprint(i, vle['T (K90)'].iloc[i], o.p)
         except ValueError as VE:
             #pprint(VE)
             pcalc[i] = 1e20*vle['p (Pa)'].iloc[i]
@@ -196,6 +143,16 @@ def pad_parameters(params, fit_bits, defaults = None):
         else:
             o.append(defaults[i])
     return o
+
+def set_parameters(RP, parameters):
+
+    # Get the current state
+    icomp, jcomp = 1, 2
+    hmodij, fij, hfmix, hfij, hbinp, hmxrul = RP.GETKTVdll(icomp, jcomp)
+    # Set the parameter values in the array of coefficients
+    fij[0:len(parameters)] = parameters
+    # Set the parameters
+    o = RP.SETKTVdll(icomp, jcomp, hmodij, fij, hfmix)
     
 def apply_betagamma(df, parameters, ofname, Nloops = 100, Npoints_selected = 10, fit_bits = None):
     
@@ -208,10 +165,16 @@ def apply_betagamma(df, parameters, ofname, Nloops = 100, Npoints_selected = 10,
     parameters = pad_parameters(parameters, fit_bits)
         
     runt1 = time.time()
-    tmpdir = write_hmx_bnc(df, parameters)
-    _betaT, _gammaT, _betaV, _gammaV, _Fij = parameters
     
-    HEOS = CoolProp.AbstractState("REFPROP", "&".join(fluids))
+    root = os.environ['RPPREFIX']
+    RP = REFPROPFunctionLibrary(os.path.join(root + 'REFPRP64.dll'))
+    RP.SETPATHdll(root)
+    o = RP.SETUPdll(2, '|'.join([f + '.FLD' for f in fluids]), 'HMX.BNC', 'DEF')
+    if o.ierr > 100:
+        raise ValueError(o.herr)
+
+    set_parameters(RP, parameters)
+    _betaT, _gammaT, _betaV, _gammaV, _Fij = parameters
 
     Nfail = 0
     
@@ -220,7 +183,7 @@ def apply_betagamma(df, parameters, ofname, Nloops = 100, Npoints_selected = 10,
         # r is a vector of percentage relative errors in p
         r, pcalc, pgiven = generate_vle_error(random_subset(df, 
                                                             Npoints_selected), 
-                                              HEOS, 
+                                              RP, 
                                               'bubble')
         Nfail += sum(np.abs(r) > 1e6)
         err = np.sqrt(np.sum(r**2)) 
@@ -256,9 +219,6 @@ def apply_betagamma(df, parameters, ofname, Nloops = 100, Npoints_selected = 10,
     if (time.time() - tic) > 7200:
         with open(ofname,'w') as fp:
             fp.write('TIMEOUT')
-
-    # Clean up after ourselves
-    shutil.rmtree(tmpdir)
     
     if ofname:
         pandas.DataFrame(library).to_csv(ofname)
@@ -517,6 +477,9 @@ def deap_optimizer(df, prefix = '', gammaT0 = None, force_only_gammaT = False, f
     
 if __name__=='__main__':
     lib = pandas.read_excel('VLE_data.xlsx')
+
+    # Uncomment this line to change the root directory of your python installation
+    # os.environ['RPPREFIX'] = r'D:\Code\REFPROP-cmake\build\10\Release\\'
 
     ################ SERIAL EVALUATION ###########
     ################ SERIAL EVALUATION ###########
