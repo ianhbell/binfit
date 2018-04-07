@@ -167,7 +167,7 @@ def apply_betagamma(df, parameters, ofname, Nloops = 100, Npoints_selected = 10,
     runt1 = time.time()
     
     root = os.environ['RPPREFIX']
-    RP = REFPROPFunctionLibrary(os.path.join(root + 'REFPRP64.dll'))
+    RP = REFPROPFunctionLibrary(os.path.join(root + 'REFPRP64.dll'), 'dll')
     RP.SETPATHdll(root)
     o = RP.SETUPdll(2, '|'.join([f + '.FLD' for f in fluids]), 'HMX.BNC', 'DEF')
     if o.ierr > 100:
