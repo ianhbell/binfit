@@ -10,9 +10,24 @@ You will need some dependencies, most of which can be handled with the Anaconda 
 1. NIST REFPROP (install as usual)
 2. Some other python packages (see below)
 
-Using the conda package manager, you can create a self-contained environment and populate it with the things you need and run the default fit:
+Using the conda package manager, you can create a self-contained environment and populate it with the things you need and run the default fit.  An ``environment.yml`` file has been provided which fully specifies the dependencies.
 
-    > conda create -n py3 python==3.5 pandas numpy scipy
-    > activate py3
-    > pip install deap CoolProp xlrd ctREFPROP
-    > python binary_fitter.py
+Use (recommended):
+```
+conda env create -f environment.yml
+conda activate bfit
+python binary_fitter.py
+```
+
+And if you are done with the environment, you can do:
+```
+conda env remove -y -n bfit
+```
+
+Or the more manual variant
+```
+> conda create -n py3 python==3.5 pandas numpy scipy
+> conda activate py3
+> pip install deap CoolProp xlrd ctREFPROP
+> python binary_fitter.py
+```

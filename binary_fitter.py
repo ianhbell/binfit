@@ -26,7 +26,7 @@ LICENSE: public domain, but please reference paper
 from __future__ import print_function
 
 # Standard python modules
-import tempfile, os, json, random, shutil, sys, time
+import tempfile, os, json, random, shutil, sys, time, array
 
 # Other packages
 import pandas
@@ -150,7 +150,7 @@ def set_parameters(RP, parameters):
     icomp, jcomp = 1, 2
     hmodij, fij, hfmix, hfij, hbinp, hmxrul = RP.GETKTVdll(icomp, jcomp)
     # Set the parameter values in the array of coefficients
-    fij[0:len(parameters)] = parameters
+    fij[0:len(parameters)] = array.array('d', parameters)
     # Set the parameters
     o = RP.SETKTVdll(icomp, jcomp, hmodij, fij, hfmix)
     
@@ -167,7 +167,7 @@ def apply_betagamma(df, parameters, ofname, Nloops = 100, Npoints_selected = 10,
     runt1 = time.time()
     
     root = os.environ['RPPREFIX']
-    RP = REFPROPFunctionLibrary(os.path.join(root + 'REFPRP64.dll'), 'dll')
+    RP = REFPROPFunctionLibrary(os.path.join(root + '/REFPRP64.dll'), 'dll')
     RP.SETPATHdll(root)
     o = RP.SETUPdll(2, '|'.join([f + '.FLD' for f in fluids]), 'HMX.BNC', 'DEF')
     if o.ierr > 100:

@@ -1,0 +1,13 @@
+# This .yml file is used to specify the conda environment
+name: bfit
+dependencies:
+  - python=3.7
+  - matplotlib
+  - scipy
+  - pandas
+  - numpy
+  - pip
+  - pip:
+    - deap
+    - xlrd
+    - ctREFPROP
