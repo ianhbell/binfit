@@ -9,5 +9,5 @@ dependencies:
   - pip
   - pip:
     - deap
-    - xlrd
+    - openpyxl
     - ctREFPROP

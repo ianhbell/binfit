@@ -28,6 +28,6 @@ Or the more manual variant
 ```
 > conda create -n py3 python==3.5 pandas numpy scipy
 > conda activate py3
-> pip install deap CoolProp xlrd ctREFPROP
+> pip install deap CoolProp openpyxl ctREFPROP
 > python binary_fitter.py
 ```
