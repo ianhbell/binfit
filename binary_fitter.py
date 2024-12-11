@@ -154,9 +154,13 @@ def set_parameters(RP, parameters):
     # Set the parameters
     o = RP.SETKTVdll(icomp, jcomp, hmodij, fij, hfmix)
     
-def apply_betagamma(df, parameters, ofname, Nloops = 100, Npoints_selected = 10, fit_bits = None):
+def apply_betagamma(df, parameters, ofname, Nloops=100, Npoints_selected=10, fit_bits=None, aliases=None):
     
     fluids = [df['fluid[0] (-)'].iloc[0], df['fluid[1] (-)'].iloc[0]]
+    if aliases is not None and isinstance(aliases, dict):
+        print('used aliases')
+        fluids = [aliases.get(f,f) for f in fluids]
+
     library = []
     tic = time.time()
 
@@ -340,7 +344,7 @@ def eaSimple(population, toolbox, cxpb, mutpb, ngen, stats=None,
 
     return population, logbook
 
-def deap_optimizer(df, prefix = '', gammaT0 = None, force_only_gammaT = False, fit_bits = None):
+def deap_optimizer(df, prefix='', gammaT0=None, force_only_gammaT=False, fit_bits=None, aliases=None):
     """
     This function actually calls deap and does the optimization, arriving at 
     the optimal values for beta_T and gamma_T
@@ -358,10 +362,13 @@ def deap_optimizer(df, prefix = '', gammaT0 = None, force_only_gammaT = False, f
         False (don't fit this parameter) for each of the fittable parameters
         betaT,gammaT,betaV,gammaV,Fij (in order).  For example [1,1,0,0,0] says fit 
         betaT and gammaT
+    aliases : dict
+        If provided, allow to specify map from given name to the actual name of the
+        fluid file to be used
     """
     tic = time.time()
     fluids = df['fluid[0] (-)'].iloc[0], df['fluid[1] (-)'].iloc[0]
-
+    
     # weight is -1 because we want to minimize the error
     creator.create("FitnessMax", base.Fitness, weights=(-1.0,)) 
     creator.create("Individual", list, fitness=creator.FitnessMax)
@@ -389,7 +396,7 @@ def deap_optimizer(df, prefix = '', gammaT0 = None, force_only_gammaT = False, f
             return False
     
     def evalOneMax(parameters, df = None, prefix = ''):
-        err = apply_betagamma(df, parameters, '', Nloops = 100, Npoints_selected = 5, fit_bits = fit_bits)
+        err = apply_betagamma(df, parameters, '', Nloops = 100, Npoints_selected = 5, fit_bits = fit_bits, aliases=aliases)
         with open(prefix + '&'.join(fluids)+'-deap-logger.csv', 'a+') as fp:
             fp.write('{0:s},{1:g}\n'.format(str(parameters), err))
         return (err,)
